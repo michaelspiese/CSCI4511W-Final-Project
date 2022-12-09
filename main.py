@@ -1,4 +1,5 @@
 from queue import PriorityQueue
+import matplotlib.pyplot as plt
 
 class Graph:
     def __init__(self,nodes=None):
@@ -50,6 +51,24 @@ def create_path_dict(problem):
         pdict[node] = []
     return pdict
 
+def make_map(map_paths,weights,colors):
+    xy = ([],[])
+    for pos in map_paths:
+        xy[0].append(pos[0])
+        xy[1].append(pos[1])
+    plt.scatter(xy[0],xy[1],c='black',marker='.')
+    
+    i = 0
+    for weight in weights:
+        xy = ([],[])
+        for pos in weight:
+            xy[0].append(pos[0])
+            xy[1].append(pos[1])
+        plt.scatter(xy[0],xy[1],c=colors[i],marker='.')
+        i+=1
+
+    plt.show()
+
 def weighted_astar_search(problem,start,weight=1):
     i = 0
     frontier = PriorityQueue()
@@ -62,8 +81,8 @@ def weighted_astar_search(problem,start,weight=1):
     while not frontier.empty():
         i += 1
         node = frontier.get()
-        print(node, i)
-        if node[2] == problem.solution: return paths[node[2]]
+        #print(node, i)
+        if node[2] == problem.solution: return (node, i, paths[node[2]])
         for child in problem.nodes[node[2]]:
             path_cost = node[1]+problem.dist(node[2],child)
             if child not in reached or path_cost < reached[child]:
@@ -73,9 +92,22 @@ def weighted_astar_search(problem,start,weight=1):
     return None
 
 if __name__ == "__main__":
-    g = Graph(create_map_dictionary("map.csv"))
-    print(g.nodes[(465,9964)][0])
+    mdict = create_map_dictionary("map.csv")
+    g = Graph(mdict)
     start = (405,10005)
-    g.solution = (1384,5051)
-    print(weighted_astar_search(g,start,0))
+    #g.solution = (1384,5051)
+    g.solution = (3045,5561)
+
+    maps = []
+    path_costs = []
+    path_lengths = []
+    iterations = []
+    for i in range(0,11):
+        search_data = weighted_astar_search(g,start,i)
+        maps.append(search_data[2])
+        path_costs.append(search_data[0][1])
+        path_lengths.append(len(search_data[2]))
+        iterations.append(search_data[1])
+    print(str(path_lengths), str(path_costs), str(iterations))
+    make_map(mdict,maps,['red','blue','green','yellow','pink','orange','brown','purple','grey','teal','gold'])
     
