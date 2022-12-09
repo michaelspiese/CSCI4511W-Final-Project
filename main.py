@@ -44,26 +44,38 @@ def create_map_dictionary(filename):
     # Return the populated dictionary
     return mdict
 
+def create_path_dict(problem):
+    pdict = {}
+    for node in problem.nodes:
+        pdict[node] = []
+    return pdict
+
 def weighted_astar_search(problem,start,weight=1):
+    i = 0
     frontier = PriorityQueue()
     frontier.put((problem.fn(0,start,weight),0,start))
+    problem.nodes[start].append(start)
     reached = {}
+    paths = create_path_dict(problem)
     reached[start] = 0
+    paths[start].append(start)
     while not frontier.empty():
+        i += 1
         node = frontier.get()
-        print(node)
-        if node[2] == problem.solution: return node
+        print(node, i)
+        if node[2] == problem.solution: return paths[node[2]]
         for child in problem.nodes[node[2]]:
             path_cost = node[1]+problem.dist(node[2],child)
             if child not in reached or path_cost < reached[child]:
                 reached[child] = path_cost
                 frontier.put((problem.fn(path_cost,child,weight),path_cost,child))
+                paths[child] = paths[node[2]] + [child]
     return None
 
 if __name__ == "__main__":
     g = Graph(create_map_dictionary("map.csv"))
-    print(g.nodes[(465,9964)])
+    print(g.nodes[(465,9964)][0])
     start = (405,10005)
     g.solution = (1384,5051)
-    node = weighted_astar_search(g,start)
+    print(weighted_astar_search(g,start,0))
     
