@@ -31,6 +31,7 @@ def create_map_dictionary(filename):
     mdict = {}
     minneapolis = open(filename, "r")
     lines = minneapolis.readlines()
+    minneapolis.close()
     for line in lines:
         points = line.strip().split(",")
         start = (int(points[1]),int(points[2]))
@@ -75,6 +76,8 @@ def make_map(map_paths,maps,colors,weights):
             y = [sPos[1],ePos[1]]
             ax.plot(x,y,'black',linewidth=0.25,zorder=0)
     plt.title("A* Pathfinding with Varying Weights",fontsize='15')
+    title = "{w:d}Weights.svg"
+    plt.savefig(title.format(w=len(weights)))
     plt.show()
 
 def weighted_astar_search(problem,start,hn,weight=1):
@@ -99,6 +102,13 @@ def weighted_astar_search(problem,start,hn,weight=1):
                 paths[child] = paths[node[2]] + [child]
     return None
 
+def createCSV(weights,costs,lengths,times,iterations):
+    out = open("output.csv",'w')
+    out.write("Weight,Cost,Length,Iterations,Time\n")
+    for i in range(len(weights)):
+        out.write(str(weights[i])+","+str(costs[i])+","+str(lengths[i])+","+str(iterations[i])+","+str(times[i])+"\n")
+    out.close()
+
 if __name__ == "__main__":
     mdict = create_map_dictionary("map.csv")
     g = Graph(mdict)
@@ -112,7 +122,7 @@ if __name__ == "__main__":
     iterations = []
     times = []
     #weights = [1,2,3,5,8]
-    weights = [*range(0,11)]
+    weights = [*range(1,11)]
     full_colors=['red','blue','green','yellow','pink','orange','brown','grey','purple','teal','gold']
     colors = []
     for weight in weights:
@@ -126,5 +136,6 @@ if __name__ == "__main__":
         times.append((te-ts)*1000000)
         colors.append(full_colors[weight])
     print(str(path_lengths), str(path_costs), str(iterations), str(times))
+    createCSV(weights,path_costs,path_lengths,times,iterations)
     make_map(mdict,maps,colors,weights)
     
