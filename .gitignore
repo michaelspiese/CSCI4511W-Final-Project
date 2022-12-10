@@ -124,5 +124,5 @@ dmypy.json
 .pyre/
 
 # Output Files
-.svg
-.csv
+*.svg
+output.csv
