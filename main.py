@@ -1,5 +1,6 @@
 from queue import PriorityQueue
 import matplotlib.pyplot as plt
+import timeit
 
 class Graph:
     def __init__(self,nodes=None):
@@ -18,9 +19,12 @@ class Graph:
     def dist(self,start,end):
         return ((end[0]-start[0])**2 + (end[1]-start[1])**2)**0.5
 
+    def xy(self,start,end):
+        return abs(start[0]-end[0]) + abs(start[1] - end[1])
+
     # The cost function for a*: f(n) = g(n) + h(n)
-    def fn(self,gn,edge,weight):
-        return gn + weight*self.dist(edge,self.solution)
+    def fn(self,gn,edge,weight,hn):
+        return gn + weight*hn(edge,self.solution)
 
 
 def create_map_dictionary(filename):
@@ -51,28 +55,32 @@ def create_path_dict(problem):
         pdict[node] = []
     return pdict
 
-def make_map(map_paths,weights,colors):
-    xy = ([],[])
-    for pos in map_paths:
-        xy[0].append(pos[0])
-        xy[1].append(pos[1])
-    plt.scatter(xy[0],xy[1],c='black',marker='.')
-    
+def make_map(map_paths,maps,colors,weights):
+    fig = plt.figure(figsize=(7,11))
+    ax = fig.add_subplot(111)
+    ax.axes.get_xaxis().set_visible(False)
+    ax.axes.get_yaxis().set_visible(False)
     i = 0
-    for weight in weights:
+    for map in maps:
         xy = ([],[])
-        for pos in weight:
+        for pos in map:
             xy[0].append(pos[0])
             xy[1].append(pos[1])
-        plt.scatter(xy[0],xy[1],c=colors[i],marker='.')
+        ax.scatter(xy[0],xy[1],c=colors[i],marker='o')
         i+=1
-
+    ax.legend(weights,loc='upper right',title='Weights')
+    for sPos in map_paths:
+        for ePos in map_paths[sPos]:
+            x = [sPos[0],ePos[0]]
+            y = [sPos[1],ePos[1]]
+            ax.plot(x,y,'black',linewidth=0.25,zorder=0)
+    plt.title("A* Pathfinding with Varying Weights",fontsize='15')
     plt.show()
 
-def weighted_astar_search(problem,start,weight=1):
+def weighted_astar_search(problem,start,hn,weight=1):
     i = 0
     frontier = PriorityQueue()
-    frontier.put((problem.fn(0,start,weight),0,start))
+    frontier.put((problem.fn(0,start,weight,hn),0,start))
     problem.nodes[start].append(start)
     reached = {}
     paths = create_path_dict(problem)
@@ -87,7 +95,7 @@ def weighted_astar_search(problem,start,weight=1):
             path_cost = node[1]+problem.dist(node[2],child)
             if child not in reached or path_cost < reached[child]:
                 reached[child] = path_cost
-                frontier.put((problem.fn(path_cost,child,weight),path_cost,child))
+                frontier.put((problem.fn(path_cost,child,weight,hn),path_cost,child))
                 paths[child] = paths[node[2]] + [child]
     return None
 
@@ -102,12 +110,21 @@ if __name__ == "__main__":
     path_costs = []
     path_lengths = []
     iterations = []
-    for i in range(0,11):
-        search_data = weighted_astar_search(g,start,i)
+    times = []
+    #weights = [1,2,3,5,8]
+    weights = [*range(0,11)]
+    full_colors=['red','blue','green','yellow','pink','orange','brown','grey','purple','teal','gold']
+    colors = []
+    for weight in weights:
+        ts = timeit.default_timer()
+        search_data = weighted_astar_search(g,start,g.dist,weight)
+        te = timeit.default_timer()
         maps.append(search_data[2])
         path_costs.append(search_data[0][1])
         path_lengths.append(len(search_data[2]))
         iterations.append(search_data[1])
-    print(str(path_lengths), str(path_costs), str(iterations))
-    make_map(mdict,maps,['red','blue','green','yellow','pink','orange','brown','purple','grey','teal','gold'])
+        times.append((te-ts)*1000000)
+        colors.append(full_colors[weight])
+    print(str(path_lengths), str(path_costs), str(iterations), str(times))
+    make_map(mdict,maps,colors,weights)
     
