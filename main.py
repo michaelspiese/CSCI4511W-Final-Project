@@ -99,7 +99,7 @@ def make_map(map_paths,maps,colors,weights,hn):
 def createCSV(weights,costs,lengths,times,iterations,hn):
     filename = hn.__name__ + "_{w:d}Weights.csv"
     out = open(filename.format(w=len(weights)),'w')
-    out.write("Weight,Cost,Length,Iterations,Time\n")
+    out.write("Weight,Cost,Length,Iterations,Time(us)\n")
     for i in range(len(weights)):
         out.write(str(weights[i])+","+str(costs[i])+","+str(lengths[i])+","+str(iterations[i])+","+str(times[i])+"\n")
     out.close()
@@ -146,11 +146,17 @@ if __name__ == "__main__":
 
     # Define start node, solution node, weights to apply, heuristic function, and colors to plot
     start = (405,10005)
-    #g.solution = (1384,5051)
+    #start = (2434,9986)
+    #solution = (1384,5051)
     solution = (3045,5561)
-    #weights = [0]
+    #solution = (259,5029)
+    #weights = [0,1]
     weights = [1,2,3,5,8]
+    #weights = [1,2,3,9]
+    #weights = [0,1,2,5]
+    #weights = [0,1,2,3,4]
     #weights = [*range(11)]
+    #weights = [*range(0,151)]
     hn = dist
     full_colors=['red','blue','green','yellow','pink','orange','brown','grey','purple','teal','gold']
 
@@ -175,7 +181,8 @@ if __name__ == "__main__":
         path_lengths.append(len(search_data[2]))
         iterations.append(search_data[1])
         times.append((te-ts)*1000000)
-        colors.append(full_colors[weight])
+        if weight < 11: colors.append(full_colors[weight])
+        else: colors.append('black')
 
     # Save the output data in both a csv of execution data and an svg of the visialized map
     createCSV(weights,path_costs,path_lengths,times,iterations,hn)
