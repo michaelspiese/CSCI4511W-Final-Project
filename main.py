@@ -1,4 +1,5 @@
 from queue import PriorityQueue
+from colour import Color
 import matplotlib.pyplot as plt
 import timeit
 
@@ -68,7 +69,7 @@ def make_map(map_paths,maps,colors,weights,hn):
     ax = fig.add_subplot(111)
     ax.axes.get_xaxis().set_visible(False)
     ax.axes.get_yaxis().set_visible(False)
-    plt.title("Weighted A* Pathfinding with Varying Weight",fontsize='15')
+    #plt.title("Weighted A* Pathfinding with Varying Weight",fontsize='15')
 
     # Map all paths taken for each weight in different colors
     i=0
@@ -77,11 +78,12 @@ def make_map(map_paths,maps,colors,weights,hn):
         for pos in map:
             xy[0].append(pos[0])
             xy[1].append(pos[1])
-        ax.scatter(xy[0],xy[1],c=colors[i],marker='o')
+        ax.scatter(xy[0],xy[1],c=colors[i].hex,marker='o')
         i+=1
 
     # Add the legend to the figure with only the search data
-    ax.legend(weights,loc='upper right',title='Weights')
+    legend = ax.legend(weights,loc='upper right',title='Weights',fontsize=14,markerscale=1.7)
+    legend.get_title().set_fontsize('16')
 
     # Create the roadmap of minneapolis underneath the search data
     for sPos in map_paths:
@@ -92,7 +94,7 @@ def make_map(map_paths,maps,colors,weights,hn):
 
     # Save the figure to a vector graphic and show the figure
     filename = hn.__name__ + "_{w:d}Weights.svg"
-    plt.savefig(filename.format(w=len(weights)))
+    plt.savefig(filename.format(w=len(weights)),bbox_inches='tight')
     plt.show()
 
 # Save all execution data to a csv file
@@ -106,7 +108,7 @@ def createCSV(weights,costs,lengths,times,iterations,hn):
 
 ############################### SEARCH FUNCTIONS ###############################
 # Performs Weighted A* Search on the problem structure with specified heuristic
-def weighted_astar_search(problem,start,solution,hn,weight=1):
+def weighted_astar_search(problem,start,solution,hn=dist,weight=1):
     # Variable used to keep track of nodes searched
     i = 0
 
@@ -145,20 +147,11 @@ if __name__ == "__main__":
     g = Graph(mdict)
 
     # Define start node, solution node, weights to apply, heuristic function, and colors to plot
-    start = (405,10005)
-    #start = (2434,9986)
-    #solution = (1384,5051)
-    solution = (3045,5561)
-    #solution = (259,5029)
-    #weights = [0,1]
-    weights = [1,2,3,5,8]
-    #weights = [1,2,3,9]
-    #weights = [0,1,2,5]
-    #weights = [0,1,2,3,4]
-    #weights = [*range(11)]
-    #weights = [*range(0,151)]
+    start,solution = ((405,10005),(3045,5561))
+    #start,solution = ((2434,9986),(259,5029))
+    weights = [*range(1,151)]
     hn = dist
-    full_colors=['red','blue','green','yellow','pink','orange','brown','grey','purple','teal','gold']
+    colors = list(Color('#ff2727').range_to(Color('#5304a5'),len(weights)))
 
     # Lists to store search execution data
     maps = []
@@ -166,7 +159,6 @@ if __name__ == "__main__":
     path_lengths = []
     iterations = []
     times = []
-    colors = []
 
     # Iterate through every weight specified
     for weight in weights:
@@ -181,8 +173,6 @@ if __name__ == "__main__":
         path_lengths.append(len(search_data[2]))
         iterations.append(search_data[1])
         times.append((te-ts)*1000000)
-        if weight < 11: colors.append(full_colors[weight])
-        else: colors.append('black')
 
     # Save the output data in both a csv of execution data and an svg of the visialized map
     createCSV(weights,path_costs,path_lengths,times,iterations,hn)
